@@ -32,9 +32,8 @@ class _OnTrackHomeState extends State<OnTrackHome> {
   bool hasPrepaid = false;
   double prepaidAmount = 0.0;
   Duration prepaidDuration = Duration.zero;
-  DateTime? startTime;
+  Duration remainingDuration = Duration.zero;
   Timer? timer;
-  Duration rideDuration = Duration.zero;
   String nearestParking = '조회 중...';
 
   final List<Map<String, dynamic>> parkingLocations = [
@@ -55,8 +54,8 @@ class _OnTrackHomeState extends State<OnTrackHome> {
       isRiding = prefs.getBool('isRiding') ?? false;
       isPaused = prefs.getBool('isPaused') ?? false;
       prepaidAmount = prefs.getDouble('prepaidAmount') ?? 0.0;
-      int durationInSeconds = prefs.getInt('rideDuration') ?? 0;
-      rideDuration = Duration(seconds: durationInSeconds);
+      int durationInSeconds = prefs.getInt('remainingDuration') ?? 0;
+      remainingDuration = Duration(seconds: durationInSeconds);
     });
   }
 
@@ -65,7 +64,7 @@ class _OnTrackHomeState extends State<OnTrackHome> {
     prefs.setBool('isRiding', isRiding);
     prefs.setBool('isPaused', isPaused);
     prefs.setDouble('prepaidAmount', prepaidAmount);
-    prefs.setInt('rideDuration', rideDuration.inSeconds);
+    prefs.setInt('remainingDuration', remainingDuration.inSeconds);
   }
 
   Future<void> _getNearestParking() async {
@@ -127,22 +126,20 @@ class _OnTrackHomeState extends State<OnTrackHome> {
     setState(() {
       isRiding = true;
       isPaused = false;
-      startTime = DateTime.now();
-      rideDuration = Duration.zero;
+      remainingDuration = prepaidDuration;
     });
 
-    if (!isDebug) {
-      timer = Timer.periodic(Duration(seconds: 1), (timer) {
-        setState(() {
-          rideDuration = DateTime.now().difference(startTime!);
-        });
-        _saveStateToDB();
+    timer = Timer.periodic(Duration(seconds: 1), (timer) {
+      setState(() {
+        if (remainingDuration > Duration.zero) {
+          remainingDuration -= Duration(seconds: 1);
+        } else {
+          stopRide();
+          timer.cancel();
+        }
       });
-    } else {
-      // 디버깅 모드일 때 가상 데이터로 시작
-      rideDuration = Duration(minutes: 10); // 가상으로 10분 설정
       _saveStateToDB();
-    }
+    });
   }
 
   void pauseRide() {
@@ -156,47 +153,38 @@ class _OnTrackHomeState extends State<OnTrackHome> {
     }
   }
 
-  void resumeRide() async {
-    final qrResult = await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => QRScanPage(debugMode: false)),
-    );
+  void resumeRide() {
+    setState(() {
+      isPaused = false;
+      isRiding = true;
+    });
 
-    if (qrResult != null) {
+    timer = Timer.periodic(Duration(seconds: 1), (timer) {
       setState(() {
-        isRiding = true;
-        isPaused = false;
-        startTime = DateTime.now().subtract(rideDuration);
+        if (remainingDuration > Duration.zero) {
+          remainingDuration -= Duration(seconds: 1);
+        } else {
+          stopRide();
+          timer.cancel();
+        }
       });
-
-      timer = Timer.periodic(Duration(seconds: 1), (timer) {
-        setState(() {
-          rideDuration = DateTime.now().difference(startTime!);
-        });
-        _saveStateToDB();
-      });
-    }
+      _saveStateToDB();
+    });
   }
 
   void stopRide() {
-    if (isRiding && startTime != null) {
-      timer?.cancel();
-      DateTime endTime = DateTime.now();
-      Duration totalTime = endTime.difference(startTime!);
+    timer?.cancel();
+    double discount = _getDiscountBasedOnDensity();
+    double refund = prepaidAmount * discount;
 
-      double discount = _getDiscountBasedOnDensity();
-      double refund = prepaidAmount * discount;
+    setState(() {
+      isRiding = false;
+      hasPrepaid = false;
+      remainingDuration = Duration.zero;
+    });
 
-      setState(() {
-        isRiding = false;
-        hasPrepaid = false;
-        startTime = null;
-        rideDuration = Duration.zero;
-      });
-
-      _showRefundDialog(refund);
-      _saveStateToDB();
-    }
+    _showRefundDialog(refund);
+    _saveStateToDB();
   }
 
   void _showPrepayDialog() {
@@ -364,26 +352,20 @@ class _OnTrackHomeState extends State<OnTrackHome> {
               SizedBox(height: 40),
               if (isRiding)
                 Text(
-                  '이용 시간: ${formatDuration(rideDuration)}',
+                  '이용 시간: ${formatDuration(remainingDuration)}',
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
               SizedBox(height: 20),
               ElevatedButton(
-                onPressed: isRiding ? null : startRideFlow,
+                onPressed: isRiding ? pauseRide : (isPaused ? resumeRide : startRideFlow),
                 style: ElevatedButton.styleFrom(minimumSize: Size(double.infinity, 50)),
-                child: Text('사용 시작'),
+                child: Text(isPaused ? '재사용' : (isRiding ? '중지' : '사용 시작')),
               ),
               SizedBox(height: 10),
               ElevatedButton(
                 onPressed: isRiding ? stopRide : null,
                 style: ElevatedButton.styleFrom(minimumSize: Size(double.infinity, 50)),
                 child: Text('사용 종료'),
-              ),
-              SizedBox(height: 10),
-              ElevatedButton(
-                onPressed: isRiding ? pauseRide : null,
-                style: ElevatedButton.styleFrom(minimumSize: Size(double.infinity, 50)),
-                child: Text(isPaused ? '재사용' : '중지'),
               ),
             ],
           ),
