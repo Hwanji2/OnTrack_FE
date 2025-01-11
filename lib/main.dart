@@ -49,9 +49,28 @@ class _OnTrackHomeState extends State<OnTrackHome> {
   @override
   void initState() {
     super.initState();
-    _loadStateFromDB();
+    _loadStateFromDB().then((_) {
+      // 남은 시간이 있고 사용 중 상태일 경우 타이머 재시작
+      if (remainingDuration > Duration.zero && isRiding) {
+        _startTimer();
+      }
+    });
     _getNearestParking();
   }
+  void _startTimer() {
+    timer = Timer.periodic(Duration(seconds: 1), (timer) {
+      setState(() {
+        if (remainingDuration > Duration.zero) {
+          remainingDuration -= Duration(seconds: 1);
+        } else {
+          stopRide();
+          timer.cancel();
+        }
+      });
+      _saveStateToDB();
+    });
+  }
+
 
   Future<void> _loadStateFromDB() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -65,8 +84,8 @@ class _OnTrackHomeState extends State<OnTrackHome> {
 
       int savedStartTime = prefs.getInt('startTime') ?? 0;
       if (savedStartTime > 0) {
-        DateTime savedStartDateTime = DateTime.fromMillisecondsSinceEpoch(savedStartTime);
-        Duration elapsed = DateTime.now().difference(savedStartDateTime);
+        startTime = DateTime.fromMillisecondsSinceEpoch(savedStartTime); // 시작 시간 복원
+        Duration elapsed = DateTime.now().difference(startTime!);
         remainingDuration = prepaidDuration - elapsed;
 
         // 남은 시간이 0보다 작으면 남은 시간을 0으로 설정
@@ -88,7 +107,7 @@ class _OnTrackHomeState extends State<OnTrackHome> {
     prefs.setDouble('prepaidAmount', prepaidAmount);
     prefs.setInt('prepaidDuration', prepaidDuration.inSeconds);
     prefs.setInt('remainingDuration', remainingDuration.inSeconds);
-    prefs.setInt('startTime', startTime?.millisecondsSinceEpoch ?? 0); // 시작 시간 저장
+    prefs.setInt('startTime', startTime?.millisecondsSinceEpoch ?? 0); // 시작 시간을 저장
   }
 
 
@@ -198,7 +217,6 @@ class _OnTrackHomeState extends State<OnTrackHome> {
       _saveStateToDB();
     });
   }
-
   void stopRide() {
     if (startTime != null) {
       setState(() {
@@ -212,9 +230,9 @@ class _OnTrackHomeState extends State<OnTrackHome> {
     timer?.cancel();
     DateTime endTime = DateTime.now(); // 종료 시간 기록
     double discount = _getDiscountBasedOnDensity();
-    double discountedAmount = prepaidAmount * (1 - discount); // 할인된 결제 금액
-    double remainingRefund = (discountedAmount / prepaidDuration.inSeconds) * remainingDuration.inSeconds; // 남은 시간에 대한 환불 금액
-    double totalRefund = remainingRefund; // 총 환불 금액으로 remainingRefund 할당
+    double discountedAmount = prepaidAmount * (1 - discount); // 할인 적용된 금액
+    double remainingRefund = (remainingDuration.inSeconds / prepaidDuration.inSeconds) * discountedAmount; // 남은 시간 비율에 따른 환불 금액
+    double totalPaid = prepaidAmount - remainingRefund; // 총 지불한 금액 = 결제 금액 - 환불 금액
 
     setState(() {
       isRiding = false;
@@ -222,9 +240,10 @@ class _OnTrackHomeState extends State<OnTrackHome> {
       startTime = null;
     });
 
-    _showRefundDialog(totalRefund, discountedAmount, endTime); // totalRefund 포함한 3개 인자 전달
+    _showRefundDialog(remainingRefund, totalPaid, endTime);
     _saveStateToDB();
   }
+
 
   void _showPrepayDialog() {
     setState(() {
@@ -344,13 +363,54 @@ class _OnTrackHomeState extends State<OnTrackHome> {
     double discountRate = _getDiscountBasedOnDensity() * 100;
     String formattedTotalDuration = formatDuration(prepaidDuration);
     String formattedRemainingDuration = formatDuration(remainingDuration);
-    String formattedStartTime = startTime != null ? startTime!.toLocal().toString().split('.')[0] : 'N/A';
     String formattedEndTime = endTime.toLocal().toString().split('.')[0];
 
     Map<String, dynamic>? nearest = _findNearestParking(position.latitude, position.longitude);
     double distanceToParking = nearest != null
         ? _calculateDistance(position.latitude, position.longitude, nearest['latitude'], nearest['longitude'])
         : double.infinity;
+
+    List<Widget> refundInfoRows = [
+      _buildInfoRow('결제한 사용 시간', formattedTotalDuration),
+      SizedBox(height: 10),
+      _buildInfoRow('남은 시간', formattedRemainingDuration),
+      SizedBox(height: 10),
+    ];
+
+    if (startTime != null) {
+      refundInfoRows.addAll([
+        _buildInfoRow('시작 시간', startTime!.toLocal().toString().split('.')[0]),
+        SizedBox(height: 10),
+      ]);
+    }
+
+    refundInfoRows.addAll([
+      _buildInfoRow('종료 시간', formattedEndTime),
+      SizedBox(height: 10),
+      _buildInfoRow('가까운 주차장', nearest?['name'] ?? '없음'),
+      SizedBox(height: 10),
+      _buildInfoRow('주차장 거리', '${distanceToParking.toStringAsFixed(1)}m'),
+      SizedBox(height: 10),
+      _buildInfoRow('밀집도', '50%'),
+      SizedBox(height: 10),
+      _buildInfoRow('할인율', '${discountRate.toStringAsFixed(1)}%'),
+      SizedBox(height: 10),
+      _buildInfoRow('총 환불 금액', '₩${refund.toStringAsFixed(2)}'),
+      SizedBox(height: 10),
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            '총 지불한 금액',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+          ),
+          Text(
+            '₩${discountedAmount.toStringAsFixed(2)}',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.red),
+          ),
+        ],
+      ),
+    ]);
 
     showDialog(
       context: context,
@@ -366,39 +426,7 @@ class _OnTrackHomeState extends State<OnTrackHome> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildInfoRow('결제한 사용 시간', formattedTotalDuration),
-            SizedBox(height: 10),
-            _buildInfoRow('남은 시간', formattedRemainingDuration),
-            SizedBox(height: 10),
-            _buildInfoRow('시작 시간', formattedStartTime),
-            SizedBox(height: 10),
-            _buildInfoRow('종료 시간', formattedEndTime),
-            SizedBox(height: 10),
-            _buildInfoRow('가까운 주차장', nearest?['name'] ?? '없음'),
-            SizedBox(height: 10),
-            _buildInfoRow('주차장 거리', '${distanceToParking.toStringAsFixed(1)}m'),
-            SizedBox(height: 10),
-            _buildInfoRow('밀집도', '50%'),
-            SizedBox(height: 10),
-            _buildInfoRow('할인율', '${discountRate.toStringAsFixed(1)}%'),
-            SizedBox(height: 10),
-            _buildInfoRow('총 환불 금액', '₩${refund.toStringAsFixed(2)}'), // 매개변수 refund 사용
-            SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  '총 지불한 금액',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-                ),
-                Text(
-                  '₩${discountedAmount.toStringAsFixed(2)}',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.red), // 빨간색 강조
-                ),
-              ],
-            ),
-          ],
+          children: refundInfoRows,
         ),
         actions: [
           Center(
@@ -414,6 +442,7 @@ class _OnTrackHomeState extends State<OnTrackHome> {
       ),
     );
   }
+
 
 
   Widget _buildInfoRow(String label, String value) {
