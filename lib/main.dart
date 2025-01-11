@@ -29,6 +29,8 @@ class OnTrackHome extends StatefulWidget {
 class _OnTrackHomeState extends State<OnTrackHome> {
   bool isRiding = false;
   bool isPaused = false;
+  DateTime? startTime; // 시작 시간을 저장하는 변수
+
   bool hasPrepaid = false;
   double prepaidAmount = 0.0;
   Duration prepaidDuration = Duration.zero;
@@ -126,6 +128,7 @@ class _OnTrackHomeState extends State<OnTrackHome> {
     setState(() {
       isRiding = true;
       isPaused = false;
+      startTime = DateTime.now(); // 시작 시간 설정
       remainingDuration = prepaidDuration;
     });
 
@@ -171,21 +174,30 @@ class _OnTrackHomeState extends State<OnTrackHome> {
       _saveStateToDB();
     });
   }
-
   void stopRide() {
+    if (startTime != null) {
+      setState(() {
+        remainingDuration = prepaidDuration - DateTime.now().difference(startTime!);
+      });
+    }
+
     timer?.cancel();
     double discount = _getDiscountBasedOnDensity();
-    double refund = prepaidAmount * discount;
+    double discountedAmount = prepaidAmount * (1 - discount); // 할인 적용 후 결제 금액
+    double remainingRefund = (discountedAmount / prepaidDuration.inSeconds) * remainingDuration.inSeconds;
+    double totalRefund = remainingRefund; // 총 환불 금액은 남은 시간에 대한 환불 금액으로만 계산
 
     setState(() {
       isRiding = false;
       hasPrepaid = false;
-      remainingDuration = Duration.zero;
+      startTime = null;
     });
 
-    _showRefundDialog(refund);
+    _showRefundDialog(totalRefund, discountedAmount);
     _saveStateToDB();
   }
+
+
 
   void _showPrepayDialog() {
     int selectedMinutes = 10;
@@ -286,7 +298,7 @@ class _OnTrackHomeState extends State<OnTrackHome> {
     );
   }
 
-  void _showRefundDialog(double refund) async {
+  void _showRefundDialog(double refund, double discountedAmount) async {
     Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
     double discountRate = _getDiscountBasedOnDensity() * 100;
     String formattedTotalDuration = formatDuration(prepaidDuration);
@@ -296,32 +308,82 @@ class _OnTrackHomeState extends State<OnTrackHome> {
         ? _calculateDistance(position.latitude, position.longitude, nearest['latitude'], nearest['longitude'])
         : double.infinity;
 
-    // 총 환불 금액: 남은 시간 환불 금액 + 할인 금액
-    double totalRefund = refund + (prepaidAmount / prepaidDuration.inSeconds) * remainingDuration.inSeconds;
+    double remainingRefund = (discountedAmount / prepaidDuration.inSeconds) * remainingDuration.inSeconds;
+    double totalRefund = remainingRefund;
+    double totalPaid = discountedAmount - refund;
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('환불 정보'),
-        content: Text(
-            '결제한 사용 시간: $formattedTotalDuration\n'
-                '남은 시간: $formattedRemainingDuration\n'
-                '가까운 주차장: ${nearest?['name'] ?? '없음'}\n'
-                '주차장과의 거리: ${distanceToParking.toStringAsFixed(1)}m\n'
-                '현재 위치: (${position.latitude}, ${position.longitude})\n'
-                '밀집도: 50%\n'
-                '할인율: ${discountRate.toStringAsFixed(1)}%\n'
-                '총 환불 금액: ₩${totalRefund.toStringAsFixed(2)}'
+        contentPadding: EdgeInsets.all(20),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        title: Center(
+          child: Text(
+            '환불 정보',
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          ),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildInfoRow('결제한 사용 시간', formattedTotalDuration),
+            SizedBox(height: 10),
+            _buildInfoRow('남은 시간', formattedRemainingDuration),
+            SizedBox(height: 10),
+            _buildInfoRow('가까운 주차장', nearest?['name'] ?? '없음'),
+            SizedBox(height: 10),
+            _buildInfoRow('주차장 거리', '${distanceToParking.toStringAsFixed(1)}m'),
+            SizedBox(height: 10),
+            _buildInfoRow('현재 위치', '(${position.latitude.toStringAsFixed(5)}, ${position.longitude.toStringAsFixed(5)})'),
+            SizedBox(height: 10),
+            _buildInfoRow('밀집도', '50%'),
+            SizedBox(height: 10),
+            _buildInfoRow('할인율', '${discountRate.toStringAsFixed(1)}%'),
+            SizedBox(height: 10),
+            _buildInfoRow('총 환불 금액', '₩${totalRefund.toStringAsFixed(2)}'),
+            SizedBox(height: 10),
+            _buildInfoRow('총 지불한 금액', '₩${totalPaid.toStringAsFixed(2)}'),
+          ],
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('확인'),
+          Center(
+            child: TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                '확인',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ),
           ),
         ],
       ),
     );
   }
+
+  Widget _buildInfoRow(String label, String value) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(
+          flex: 3,
+          child: Text(
+            label,
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+          ),
+        ),
+        Expanded(
+          flex: 2,
+          child: Text(
+            value,
+            textAlign: TextAlign.right,
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+        ),
+      ],
+    );
+  }
+
 
   double _getDiscountBasedOnDensity() {
     // 임시 밀집도에 따른 할인율 (0% ~ 20%)
@@ -376,13 +438,13 @@ class _OnTrackHomeState extends State<OnTrackHome> {
                   '이용 시간: ${formatDuration(remainingDuration)}',
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
-              SizedBox(height: 20),
+              SizedBox(height: 80),
               ElevatedButton(
                 onPressed: isRiding ? pauseRide : (isPaused ? resumeRide : startRideFlow),
                 style: ElevatedButton.styleFrom(minimumSize: Size(double.infinity, 50)),
                 child: Text(isPaused ? '재사용' : (isRiding ? '사용 중지' : '사용 시작')),
               ),
-              SizedBox(height: 10),
+              SizedBox(height: 15),
               ElevatedButton(
                 onPressed: isRiding ? stopRide : null,
                 style: ElevatedButton.styleFrom(minimumSize: Size(double.infinity, 50)),
