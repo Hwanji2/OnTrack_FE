@@ -286,12 +286,33 @@ class _OnTrackHomeState extends State<OnTrackHome> {
     );
   }
 
-  void _showRefundDialog(double refund) {
+  void _showRefundDialog(double refund) async {
+    Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+    double discountRate = _getDiscountBasedOnDensity() * 100;
+    String formattedTotalDuration = formatDuration(prepaidDuration);
+    String formattedRemainingDuration = formatDuration(remainingDuration);
+    Map<String, dynamic>? nearest = _findNearestParking(position.latitude, position.longitude);
+    double distanceToParking = nearest != null
+        ? _calculateDistance(position.latitude, position.longitude, nearest['latitude'], nearest['longitude'])
+        : double.infinity;
+
+    // 총 환불 금액: 남은 시간 환불 금액 + 할인 금액
+    double totalRefund = refund + (prepaidAmount / prepaidDuration.inSeconds) * remainingDuration.inSeconds;
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Text('환불 정보'),
-        content: Text('할인된 금액으로 ₩${refund.toStringAsFixed(2)} 환불됩니다.'),
+        content: Text(
+            '결제한 사용 시간: $formattedTotalDuration\n'
+                '남은 시간: $formattedRemainingDuration\n'
+                '가까운 주차장: ${nearest?['name'] ?? '없음'}\n'
+                '주차장과의 거리: ${distanceToParking.toStringAsFixed(1)}m\n'
+                '현재 위치: (${position.latitude}, ${position.longitude})\n'
+                '밀집도: 50%\n'
+                '할인율: ${discountRate.toStringAsFixed(1)}%\n'
+                '총 환불 금액: ₩${totalRefund.toStringAsFixed(2)}'
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -359,7 +380,7 @@ class _OnTrackHomeState extends State<OnTrackHome> {
               ElevatedButton(
                 onPressed: isRiding ? pauseRide : (isPaused ? resumeRide : startRideFlow),
                 style: ElevatedButton.styleFrom(minimumSize: Size(double.infinity, 50)),
-                child: Text(isPaused ? '재사용' : (isRiding ? '중지' : '사용 시작')),
+                child: Text(isPaused ? '재사용' : (isRiding ? '사용 중지' : '사용 시작')),
               ),
               SizedBox(height: 10),
               ElevatedButton(
