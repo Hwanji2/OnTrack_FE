@@ -32,6 +32,7 @@ class _OnTrackHomeState extends State<OnTrackHome> {
   bool isRiding = false;
   bool isPaused = false;
   DateTime? startTime;
+  int selectedMinutes = 10; // 선택된 시간을 저장하는 변수
 
   bool hasPrepaid = false;
   double prepaidAmount = 0.0;
@@ -201,7 +202,11 @@ class _OnTrackHomeState extends State<OnTrackHome> {
   }
 
   void _showPrepayDialog() {
-    int selectedMinutes = 10;
+    setState(() {
+      selectedMinutes = prepaidDuration.inMinutes > 0 ? prepaidDuration.inMinutes : 10;
+    });
+
+    TextEditingController textController = TextEditingController(text: selectedMinutes.toString());
 
     showDialog(
       context: context,
@@ -211,33 +216,35 @@ class _OnTrackHomeState extends State<OnTrackHome> {
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
+              controller: textController,
               keyboardType: TextInputType.number,
               decoration: InputDecoration(labelText: '직접 입력 (분)'),
               onChanged: (value) {
                 int minutes = int.tryParse(value) ?? 0;
                 setState(() {
-                  selectedMinutes = minutes;
+                  selectedMinutes = minutes > 0 ? minutes : 10;
                 });
               },
             ),
             SizedBox(height: 10),
             DropdownButton<int>(
-              value: selectedMinutes, // 현재 선택된 값을 보여줌
+              hint: Text('시간 선택'), // 기본으로 보이는 텍스트
               items: [10, 20, 30, 60].map((int value) {
                 return DropdownMenuItem<int>(
                   value: value,
+
                   child: Text('$value 분'),
                 );
               }).toList(),
               onChanged: (int? value) {
                 if (value != null) {
                   setState(() {
-                    selectedMinutes = value; // 선택한 값으로 업데이트
+                    selectedMinutes = value;
+                    textController.text = value.toString(); // 드롭다운 선택 시 TextField도 동기화
                   });
                 }
               },
             ),
-
             SizedBox(height: 20),
             Text(
               '분산된 주차장에 주차할 시 할인이 적용되며, 사용 시간이 남을 경우 금액을 환불받을 수 있습니다.',
@@ -251,7 +258,7 @@ class _OnTrackHomeState extends State<OnTrackHome> {
             onPressed: () {
               setState(() {
                 prepaidDuration = Duration(minutes: selectedMinutes);
-                prepaidAmount = selectedMinutes * 100.0;
+                prepaidAmount = selectedMinutes * 100.0; // 분당 100원 요금
                 hasPrepaid = true;
               });
               Navigator.pop(context);
@@ -263,6 +270,8 @@ class _OnTrackHomeState extends State<OnTrackHome> {
       ),
     );
   }
+
+
   void _showPaymentDialog() {
     showDialog(
       context: context,
