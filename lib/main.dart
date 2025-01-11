@@ -222,7 +222,7 @@ class _OnTrackHomeState extends State<OnTrackHome> {
             ),
             SizedBox(height: 10),
             DropdownButton<int>(
-              value: selectedMinutes,
+              value: selectedMinutes, // 현재 선택된 값을 보여줌
               items: [10, 20, 30, 60].map((int value) {
                 return DropdownMenuItem<int>(
                   value: value,
@@ -232,11 +232,12 @@ class _OnTrackHomeState extends State<OnTrackHome> {
               onChanged: (int? value) {
                 if (value != null) {
                   setState(() {
-                    selectedMinutes = value;
+                    selectedMinutes = value; // 선택한 값으로 업데이트
                   });
                 }
               },
             ),
+
             SizedBox(height: 20),
             Text(
               '분산된 주차장에 주차할 시 할인이 적용되며, 사용 시간이 남을 경우 금액을 환불받을 수 있습니다.',
