@@ -4,6 +4,8 @@ import 'dart:math' as math;
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/material.dart';
+import 'package:qr_code_scanner/qr_code_scanner.dart';
 
 void main() {
   runApp(MyApp());
@@ -29,7 +31,7 @@ class OnTrackHome extends StatefulWidget {
 class _OnTrackHomeState extends State<OnTrackHome> {
   bool isRiding = false;
   bool isPaused = false;
-  DateTime? startTime; // 시작 시간을 저장하는 변수
+  DateTime? startTime;
 
   bool hasPrepaid = false;
   double prepaidAmount = 0.0;
@@ -128,7 +130,7 @@ class _OnTrackHomeState extends State<OnTrackHome> {
     setState(() {
       isRiding = true;
       isPaused = false;
-      startTime = DateTime.now(); // 시작 시간 설정
+      startTime = DateTime.now();
       remainingDuration = prepaidDuration;
     });
 
@@ -174,6 +176,7 @@ class _OnTrackHomeState extends State<OnTrackHome> {
       _saveStateToDB();
     });
   }
+
   void stopRide() {
     if (startTime != null) {
       setState(() {
@@ -183,9 +186,9 @@ class _OnTrackHomeState extends State<OnTrackHome> {
 
     timer?.cancel();
     double discount = _getDiscountBasedOnDensity();
-    double discountedAmount = prepaidAmount * (1 - discount); // 할인 적용 후 결제 금액
+    double discountedAmount = prepaidAmount * (1 - discount);
     double remainingRefund = (discountedAmount / prepaidDuration.inSeconds) * remainingDuration.inSeconds;
-    double totalRefund = remainingRefund; // 총 환불 금액은 남은 시간에 대한 환불 금액으로만 계산
+    double totalRefund = remainingRefund;
 
     setState(() {
       isRiding = false;
@@ -196,8 +199,6 @@ class _OnTrackHomeState extends State<OnTrackHome> {
     _showRefundDialog(totalRefund, discountedAmount);
     _saveStateToDB();
   }
-
-
 
   void _showPrepayDialog() {
     int selectedMinutes = 10;
@@ -236,6 +237,12 @@ class _OnTrackHomeState extends State<OnTrackHome> {
                 }
               },
             ),
+            SizedBox(height: 20),
+            Text(
+              '분산된 주차장에 주차할 시 할인이 적용되며, 사용 시간이 남을 경우 금액을 환불받을 수 있습니다.',
+              style: TextStyle(fontSize: 14, color: Colors.grey),
+              textAlign: TextAlign.center,
+            ),
           ],
         ),
         actions: [
@@ -243,7 +250,7 @@ class _OnTrackHomeState extends State<OnTrackHome> {
             onPressed: () {
               setState(() {
                 prepaidDuration = Duration(minutes: selectedMinutes);
-                prepaidAmount = selectedMinutes * 100.0; // 분당 100원 요금
+                prepaidAmount = selectedMinutes * 100.0;
                 hasPrepaid = true;
               });
               Navigator.pop(context);
@@ -255,13 +262,12 @@ class _OnTrackHomeState extends State<OnTrackHome> {
       ),
     );
   }
-
   void _showPaymentDialog() {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Text('결제 수단 선택'),
-        content: Text('결제 수단을 선택하세요.'),
+        content: Text('총 결제 금액: ₩${prepaidAmount.toStringAsFixed(2)}'),
         actions: [
           TextButton(
             onPressed: () {
@@ -384,7 +390,6 @@ class _OnTrackHomeState extends State<OnTrackHome> {
     );
   }
 
-
   double _getDiscountBasedOnDensity() {
     // 임시 밀집도에 따른 할인율 (0% ~ 20%)
     int density = 50; // 가상 밀집도 값 (0~100)
@@ -457,6 +462,7 @@ class _OnTrackHomeState extends State<OnTrackHome> {
     );
   }
 }
+
 
 class QRScanPage extends StatefulWidget {
   final bool debugMode;
