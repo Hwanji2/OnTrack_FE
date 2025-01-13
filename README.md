@@ -2,8 +2,7 @@
 ![image](https://github.com/user-attachments/assets/9a1bf3a0-2026-4509-9c49-68ca7c1d09eb)
 ![image](https://github.com/user-attachments/assets/9e50d9c9-da1c-40f5-8e4a-9cd7ba12c78e)
 
-markdown
-코드 복사
+
 # ONTRACK
 
 ONTRACK는 스마트 사전 결제, 가까운 주차장 조회, 실시간 사용 시간 추적 등 편리한 자전거 공유 서비스를 제공하는 Flutter 기반 모바일 애플리케이션입니다.
