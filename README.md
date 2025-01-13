@@ -1,16 +1,114 @@
-# ontrackc
+![image](https://github.com/user-attachments/assets/327b714e-8c85-4bc6-8756-0acfa3483c5d)
+![image](https://github.com/user-attachments/assets/9a1bf3a0-2026-4509-9c49-68ca7c1d09eb)
+![image](https://github.com/user-attachments/assets/9e50d9c9-da1c-40f5-8e4a-9cd7ba12c78e)
+ONTRACK 앱
+ONTRACK는 스마트 사전 결제, 가장 가까운 주차장 조회, 실시간 사용 시간 추적 등 편리한 자전거 공유 서비스를 제공하는 Flutter 기반 모바일 애플리케이션입니다. 위치 기반 서비스, QR 코드 결제, 자동 라이딩 관리 등의 주요 기능을 포함하고 있습니다.
 
-A new Flutter project.
+주요 기능
+1. 사전 결제 관리
+사용자는 원하는 시간을 선택하여 사전 결제할 수 있습니다.
+실시간으로 남은 시간이 표시되며, 남은 시간에 따라 자동으로 환불이 이루어집니다.
+밀집도에 따른 할인율이 적용되어, 분산된 주차장 이용 시 추가 할인이 가능합니다.
+2. 가까운 주차장 조회
+Geolocator 패키지를 이용해 현재 위치를 기반으로 가장 가까운 주차장을 탐색합니다.
+주차장과의 거리 및 위치 정보를 실시간으로 제공합니다.
+현재 데모용으로 아래 두 개의 주차장을 지원합니다:
+건국대학교 공학관 A동 앞 주차장
+건국대학교 운동장 앞 주차장
+3. QR 코드 결제
+QR 코드 스캔을 통해 결제 및 라이딩 시작이 가능합니다.
+디버깅 모드에서 QR 코드 없이 테스트 진행이 가능합니다.
+4. 타이머 기반 라이딩 관리
+사전 결제한 시간에 따라 타이머가 작동하며, 남은 시간이 표시됩니다.
+사용 시작, 일시 정지, 재사용, 종료 기능을 지원합니다.
+라이딩 종료 시, 남은 시간에 따른 환불 금액 및 할인 금액을 자동으로 계산하여 사용자에게 표시합니다.
+기술 스택
+Flutter: UI 및 전체 애플리케이션 구조 개발
+Dart: Flutter 애플리케이션의 주 프로그래밍 언어
+Geolocator: 위치 정보를 가져와 가장 가까운 주차장을 계산
+Shared Preferences: 상태 데이터를 로컬 저장소에 저장하여 앱 종료 후에도 상태 복원 가능
+QR Code Scanner: QR 코드 기반 결제 및 디버깅 지원
+앱 사용 방법
+앱 실행
+앱을 실행하면 가장 가까운 주차장을 자동으로 조회하여 화면에 표시합니다.
 
-## Getting Started
 
-This project is a starting point for a Flutter application.
 
-A few resources to get you started if this is your first Flutter project:
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+나의 말:
+아니 그 깃헙에 올리는 형식대로 ##이런거 써서
+ChatGPT의 말:
+ChatGPT
+아래는 깃허브에 업로드할 수 있는 형식의 README.md 파일입니다:
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+markdown
+코드 복사
+# ONTRACK
+
+ONTRACK는 스마트 사전 결제, 가까운 주차장 조회, 실시간 사용 시간 추적 등 편리한 자전거 공유 서비스를 제공하는 Flutter 기반 모바일 애플리케이션입니다.
+
+## 주요 기능
+
+### 1. 사전 결제 관리
+- 사용자는 원하는 사용 시간을 선택하여 사전 결제할 수 있습니다.
+- 남은 시간이 실시간으로 표시되며, 사용 종료 시 남은 시간에 따라 환불 금액이 자동 계산됩니다.
+- 밀집도에 따라 할인율이 적용되어 특정 주차장 이용 시 추가 할인을 받을 수 있습니다.
+
+### 2. 가까운 주차장 조회
+- **Geolocator** 패키지를 활용하여 사용자의 현재 위치를 기반으로 가장 가까운 주차장을 탐색합니다.
+- 주차장과의 거리 및 위치 정보를 실시간으로 제공합니다.
+- 현재 지원하는 주차장 목록:
+  - 건국대학교 공학관 A동 앞 주차장
+  - 건국대학교 운동장 앞 주차장
+
+### 3. QR 코드 결제
+- QR 코드를 통해 결제 및 라이딩 시작이 가능합니다.
+- 디버깅 모드에서 QR 코드 없이 테스트 진행이 가능합니다.
+
+### 4. 타이머 기반 라이딩 관리
+- 사전 결제한 시간에 따라 타이머가 작동하며, 실시간으로 남은 시간이 표시됩니다.
+- **사용 시작**, **일시 정지**, **재사용**, **종료** 기능을 지원합니다.
+- 라이딩 종료 시, 남은 시간에 따른 환불 금액 및 할인 금액을 자동 계산하여 사용자에게 표시합니다.
+
+## 기술 스택
+
+- **Flutter**: UI 및 전체 애플리케이션 구조 개발
+- **Dart**: Flutter 애플리케이션의 주 프로그래밍 언어
+- **Geolocator**: 위치 정보를 가져와 가까운 주차장을 계산
+- **Shared Preferences**: 상태 데이터를 로컬에 저장하여 앱 종료 후에도 상태 복원 가능
+- **QR Code Scanner**: QR 코드 기반 결제 및 디버깅 지원
+
+## 앱 사용 방법
+
+1. **앱 실행**
+   - 앱을 실행하면 자동으로 가장 가까운 주차장을 탐색하여 화면에 표시합니다.
+
+2. **사전 결제**
+   - '사용 시작' 버튼을 눌러 사전 결제 창을 띄웁니다.
+   - 원하는 사용 시간을 입력하거나 드롭다운에서 선택하여 사전 결제를 진행합니다.
+   - 결제 금액이 표시되며, QR 코드 스캔을 통해 결제가 완료됩니다.
+
+3. **라이딩 시작**
+   - 결제 후 타이머가 시작되며, 실시간으로 남은 시간이 표시됩니다.
+
+4. **일시 정지 및 재사용**
+   - 라이딩 도중 일시 정지할 수 있으며, 필요 시 '재사용' 버튼을 눌러 다시 시작할 수 있습니다.
+
+5. **라이딩 종료 및 환불**
+   - 사용 종료 시 남은 시간에 따른 환불 금액이 계산되어 화면에 표시됩니다.
+   - 밀집도에 따른 할인율이 적용된 환불 금액이 함께 표시됩니다.
+
+## 설치 방법
+
+1. 이 저장소를 클론합니다.
+   ```bash
+   git clone https://github.com/사용자명/ontrack.git
+   cd ontrack
+Flutter 환경을 설정한 후 의존성을 설치합니다.
+bash
+코드 복사
+flutter pub get
+디바이스 또는 에뮬레이터에서 앱을 실행합니다.
+bash
+코드 복사
+flutter run
