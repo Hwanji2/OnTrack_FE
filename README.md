@@ -1,8 +1,11 @@
 # 공유 킥보드 밀집도에 따른 기본요금 할인율 시스템
 
+![image](https://github.com/user-attachments/assets/327b714e-8c85-4bc6-8756-0acfa3483c5d)
+
 ## 작품 개요
 길거리를 걷다가 겹겹이 쌓인 킥보드 때문에 불편했던 적이 있으신가요?  
 2018년 국내 최초 전동킥보드 공유 서비스 '킥고잉'이 등장한 이래, 다양한 공유 킥보드 서비스가 출시되면서 도시 곳곳에서 편리하게 이용할 수 있게 되었습니다. 그러나 공유 킥보드의 자율성으로 인해 주요 지하철역 주변과 보행로, 공공시설 등에서 통행 및 시설 이용을 방해하는 문제가 빈번히 발생하고 있습니다.
+
 
 온트랙 팀은 이러한 문제를 해결하기 위해 **밀집도 기반 기본요금 할인율 시스템**을 고안했습니다. 이 시스템은 공유 킥보드가 밀집된 지역에서의 사용을 장려하여 킥보드를 자발적으로 분산시키고, 사회적 혼란을 줄이며 지속 가능한 모빌리티 환경을 조성하는 것을 목표로 합니다.
 
@@ -52,6 +55,9 @@
 
 ## 단계별 제작 과정
 
+
+![image](https://github.com/user-attachments/assets/446b73d3-662d-4e46-8cf4-df9350d3b5f5)
+
 ### 1. 아이디어 선정 및 구체화 (3월 1일 ~ 3월 5일)
 - 온라인 회의를 통해 여러 아이디어를 논의하고, 공유 킥보드 밀집 문제 해결 아이디어를 선정하였습니다.
 - 대면 회의를 통해 구체적인 시스템 설계 및 사용 기술을 결정하였습니다.
@@ -68,12 +74,20 @@
 - NEO-6M GPS 모듈과 Raspberry Pi를 연결하고, 회로도를 작성하여 하드웨어를 구성했습니다.
 - NEO-6M 모듈에서 GPS 데이터를 수신하고 이를 라즈베리 파이로 전송하는 작업을 완료했습니다.
 
+
+![image](https://github.com/user-attachments/assets/893098d5-1194-40dd-8a5a-7c9115951034)
+
+
 ### 4. 하드웨어-서버 통신 테스트 (3월 21일)
 - 라즈베리 파이에서 수집한 위치 데이터를 서버로 전송하고, 서버가 데이터를 정확하게 처리하는지 검증했습니다.
 - 테스트 결과, 실내에서는 GPS 신호가 약하여 외부 환경에서 테스트를 진행하였고 정상적으로 작동하는 것을 확인했습니다.
 
+![image](https://github.com/user-attachments/assets/c692209a-6615-40f6-9da7-e10d37f9fe02)
+
 ### 5. 앱 개발 (3월 22일 ~ 3월 25일)
 - Flutter로 모바일 앱을 개발하였으며, 서버로부터 데이터를 수신하여 사용자에게 요금을 표시하는 기능을 구현했습니다.
+
+[![실행 화면](https://youtu.be/yJf9vM9OTJ8?feature=shared)
 
 ### 6. 최종 테스트 및 시연 (3월 26일)
 - 완성된 하드웨어, 서버, 앱을 통합하여 실제로 작동하는 환경을 시뮬레이션하였습니다.
@@ -98,15 +112,7 @@
 - [Use Neo 6M GPS Module with Raspberry Pi and Python](https://sparklers-the-makers.github.io)
 - [Raspberry Pi 의 GPIO 사용해보기 - 네이버 블로그](https://naver.com)
 
-## 프로젝트 문서
-- 프로젝트 진행 과정 및 회의록은 아래 노션 페이지에서 확인할 수 있습니다:
-  - [Notion 페이지 링크](https://flower-number-d8c.notion.site/On-track-ec0b5a36399a403b89a27c2f502f4de8?pvs=4)
 
-## 라이센스
-이 프로젝트는 [MIT 라이센스](LICENSE)를 따릅니다.
-
-
-![image](https://github.com/user-attachments/assets/327b714e-8c85-4bc6-8756-0acfa3483c5d)
 ![image](https://github.com/user-attachments/assets/9a1bf3a0-2026-4509-9c49-68ca7c1d09eb)
 ![image](https://github.com/user-attachments/assets/9e50d9c9-da1c-40f5-8e4a-9cd7ba12c78e)
 
