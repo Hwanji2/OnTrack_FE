@@ -5,13 +5,15 @@
 ## 작품 개요
 길거리를 걷다가 겹겹이 쌓인 킥보드 때문에 불편했던 적이 있으신가요?  
 2018년 국내 최초 전동킥보드 공유 서비스 '킥고잉'이 등장한 이래, 다양한 공유 킥보드 서비스가 출시되면서 도시 곳곳에서 편리하게 이용할 수 있게 되었습니다. 그러나 공유 킥보드의 자율성으로 인해 주요 지하철역 주변과 보행로, 공공시설 등에서 통행 및 시설 이용을 방해하는 문제가 빈번히 발생하고 있습니다.
+![image](https://github.com/user-attachments/assets/9a1bf3a0-2026-4509-9c49-68ca7c1d09eb)
 
-![image](https://github.com/user-attachments/assets/b1508c8f-1dfc-4691-bf67-856b0793853c)
 
 저희 온트랙 팀은 이러한 문제를 해결하기 위해 **밀집도 기반 기본요금 할인율 시스템**을 고안했습니다. 이 시스템은 공유 킥보드가 밀집된 지역에서의 사용을 장려하여 킥보드를 자발적으로 분산시키고, 사회적 혼란을 줄이며 지속 가능한 모빌리티 환경을 조성하는 것을 목표로 합니다.
 
-![image](https://github.com/user-attachments/assets/0d30ab22-a0d4-4ebb-be42-4834d11be4d7)
 
+![image](https://github.com/user-attachments/assets/9e50d9c9-da1c-40f5-8e4a-9cd7ba12c78e)
+
+![image](https://github.com/user-attachments/assets/b1508c8f-1dfc-4691-bf67-856b0793853c)
 
 ## 주요 기능
 
@@ -34,6 +36,7 @@
 
 ### 동작 과정
 
+![image](https://github.com/user-attachments/assets/0d30ab22-a0d4-4ebb-be42-4834d11be4d7)
 #### 1) 사용자가 킥보드 사용 종료 시
 1. NEO-6M GPS 모듈이 라즈베리 파이의 `/dev/ttyAMA0` 파일에 위도, 경도 데이터를 저장합니다.
 2. 파이썬의 `pynmea2` 라이브러리를 사용하여 위치 데이터를 파싱합니다.
@@ -123,8 +126,6 @@
 - [Raspberry Pi 의 GPIO 사용해보기 - 네이버 블로그](https://naver.com)
 
 
-![image](https://github.com/user-attachments/assets/9a1bf3a0-2026-4509-9c49-68ca7c1d09eb)
-![image](https://github.com/user-attachments/assets/9e50d9c9-da1c-40f5-8e4a-9cd7ba12c78e)
 
 
 # ONTRACK
