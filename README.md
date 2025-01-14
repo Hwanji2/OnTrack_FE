@@ -26,7 +26,6 @@
 ### 2. 실시간 위치 정보 처리
 - NEO-6M GPS 모듈과 Raspberry Pi를 사용하여 실시간으로 킥보드의 위치를 수집하고 서버에 전송합니다.
 - 서버는 수신한 위치 정보를 MySQL 데이터베이스에 저장하고, 주변 킥보드 수를 계산합니다.
-- ![image](https://github.com/user-attachments/assets/0eae6780-8d45-4e9c-aaf8-b0c3cddf74e4)
 
 
 ### 3. 사용자 인터페이스 (모바일 앱)
@@ -111,7 +110,6 @@
   - [제품 링크](https://www.devicemart.co.kr/goods/view?no=1311414)
 
 ## 회로도
-- 프로젝트에 사용한 회로도는 아래와 같습니다:
 ![image](https://github.com/user-attachments/assets/f858d756-2d6d-4489-b650-1704e85693c6)
 
   
