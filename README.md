@@ -191,5 +191,4 @@ Flutter 환경을 설정한 후 의존성을 설치합니다.
  ```bash
 flutter pub get
 디바이스 또는 에뮬레이터에서 앱을 실행합니다.
- ```bash
 flutter run
