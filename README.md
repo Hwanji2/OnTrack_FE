@@ -188,10 +188,8 @@ ONTRACK_FE는 스마트 사전 결제, 가까운 주차장 조회, 실시간 사
    git clone https://github.com/사용자명/ontrack.git
    cd ontrack
 Flutter 환경을 설정한 후 의존성을 설치합니다.
-bash
-코드 복사
+ ```bash
 flutter pub get
 디바이스 또는 에뮬레이터에서 앱을 실행합니다.
-bash
-코드 복사
+ ```bash
 flutter run
